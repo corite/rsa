@@ -16,13 +16,11 @@ class RivestShamirAdleman {
             }
             x = x.pow(2) % modulus
         }
-        if (!y == xNum.modPow(exponent,modulus)) {
-            println("squareMultiply panic")
-        }
+
         return y
     }
 
-    fun eeA(a:BigInteger, b:BigInteger):Array<BigInteger> {
+    private fun eeA(a:BigInteger, b:BigInteger):Array<BigInteger> {
         // this could also be done by using the built-in BigInteger.modInverse() function
         var r0 = a; var r1 = b
         var (k,s0,s1,t0,t1) = listOf( BigInteger.ZERO, BigInteger.ONE, BigInteger.ZERO, BigInteger.ZERO, BigInteger.ONE )
@@ -42,9 +40,7 @@ class RivestShamirAdleman {
             t0 = tkTmp
 
         } while (r1 != BigInteger.ZERO)
-        if (r0 != BigInteger.ONE || BigInteger.ONE != s0 * a % b) {
-            println("eeA panic")
-        }
+
         return arrayOf(r0,s0,t0)
     }
 
@@ -66,7 +62,7 @@ class RivestShamirAdleman {
         val z = BigInteger(length,random)
         val init = z * BigInteger.valueOf(30)
         var n:BigInteger
-        for (j in 0..100) {
+        for (j in 0..200) {
             for (i in getSomePrimes()) {
                 n = init + BigInteger.valueOf(i.toLong())+ BigInteger.valueOf(j.toLong())*BigInteger.valueOf(30)
                 for (test in 1..40) {
@@ -83,21 +79,21 @@ class RivestShamirAdleman {
         return intArrayOf(1, 7, 11, 13, 17, 19, 23, 29)
     }
 
-    fun testMillerRabin(n: BigInteger): Boolean {
-        var m = n - BigInteger.ONE
+    private fun testMillerRabin(n: BigInteger): Boolean {
+        var m:BigInteger
         var k = 0
-        while (m % BigInteger.TWO == BigInteger.ZERO) {
-            m = m.shiftRight(1)
+        do {
             k++
-        }
-        val a = getRandomBiginteger(BigInteger.TWO, n - BigInteger.ONE)
+            m = (n- BigInteger.ONE)/ BigInteger.TWO.pow(k)
+        } while (m % BigInteger.TWO == BigInteger.ZERO)
+        val a = getRandomBigInteger(BigInteger.TWO, n - BigInteger.ONE)
 
         var b = squareMultiply(a, m, n)
         if (b % n == BigInteger.ONE) {
             return true
         }
         for (i in 1..k) {
-            if (b % n == n-BigInteger.ONE) {
+            if (b % n == n-BigInteger.ONE || b % n ==-BigInteger.ONE) {
                 return true
             } else {
                 b = squareMultiply(b, BigInteger.TWO, n)
@@ -106,14 +102,14 @@ class RivestShamirAdleman {
         return false
     }
 
-    fun getRandomBiginteger(min:BigInteger, max:BigInteger):BigInteger {
+    private fun getRandomBigInteger(min:BigInteger, max:BigInteger):BigInteger {
         val random = SecureRandom()
-        var res:BigInteger
+        var result:BigInteger
         do {
-            res = BigInteger(max.bitLength(), random)
-        } while (!res in min..max)
+            result = BigInteger(max.bitLength(), random)
+        } while (result < min || result > max)
 
-        return res
+        return result
     }
 
 
