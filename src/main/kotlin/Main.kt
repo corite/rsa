@@ -33,7 +33,6 @@ fun showRsaPart2() {
 
 fun showDiffOfSquares() {
     println("\n:::Difference of Squares:::")
-    val rsa = RivestShamirAdleman()
 
     val p = BigInteger.valueOf(20353)
     val q = BigInteger.valueOf(41851)

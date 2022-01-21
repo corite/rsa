@@ -37,8 +37,7 @@ class OptimalAsymmetricEncryptionPadding {
         val lHash = hashFunction.digest(l)
         val random = SecureRandom()
         val seed = random.generateSeed(hashFunction.digestLength)
-        //val seed = ByteArray(32)
-        //len(n) = len(m) + len(PS) − 2 · len(hash) − 2
+
         val psLength = n.toByteArray().size - m.size + 2*hashFunction.digestLength + 2
         val ps = ByteArray(psLength)
 
@@ -46,9 +45,9 @@ class OptimalAsymmetricEncryptionPadding {
         val maskedDB = xorBytes(mgf1, lHash+ps+oneByte+m)
 
         val mgf2 = maskGeneratingFunction(maskedDB, seed.size, hashFunction)
-
         val maskedSeed = xorBytes(seed,mgf2)
-        return zeroByte+maskedSeed+maskedDB
+
+        return zeroByte + maskedSeed + maskedDB
 
     }
 
