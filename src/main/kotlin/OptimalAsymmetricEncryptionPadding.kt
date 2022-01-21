@@ -1,7 +1,7 @@
 import java.math.BigInteger
 import java.security.MessageDigest
 import java.security.SecureRandom
-import kotlin.random.Random
+import kotlin.experimental.xor
 
 class OptimalAsymmetricEncryptionPadding {
     private fun maskGeneratingFunction(seed:ByteArray, length:Int, hashFunction:MessageDigest):ByteArray {
@@ -32,16 +32,65 @@ class OptimalAsymmetricEncryptionPadding {
             throw IllegalArgumentException("message is too long")
         }
         val l = byteArrayOf()
+        val oneByte = byteArrayOf(1)
+        val zeroByte = byteArrayOf(0)
         val lHash = hashFunction.digest(l)
         val random = SecureRandom()
-        val seed = random.generateSeed(42)
+        val seed = random.generateSeed(hashFunction.digestLength)
+        //val seed = ByteArray(32)
         //len(n) = len(m) + len(PS) − 2 · len(hash) − 2
         val psLength = n.toByteArray().size - m.size + 2*hashFunction.digestLength + 2
-        val firstMgf = maskGeneratingFunction(seed,42,hashFunction)
-        // what is 'h'?
-        // what should 'length' from MGF be?
+        val ps = ByteArray(psLength)
 
-        return byteArrayOf()
+        val mgf1 = maskGeneratingFunction(seed, lHash.size+ps.size+oneByte.size+m.size,hashFunction)
+        val maskedDB = xorBytes(mgf1, lHash+ps+oneByte+m)
+
+        val mgf2 = maskGeneratingFunction(maskedDB, seed.size, hashFunction)
+
+        val maskedSeed = xorBytes(seed,mgf2)
+        return zeroByte+maskedSeed+maskedDB
 
     }
+
+    fun reverseTransform(transformed:ByteArray, hashFunction: MessageDigest):ByteArray {
+        val zeroByte = transformed.copyOfRange(0,1)
+        val maskedSeed = transformed.copyOfRange(1,1+hashFunction.digestLength)
+        val maskedDB = transformed.copyOfRange(1+hashFunction.digestLength,transformed.size)
+
+        val mgf2 = maskGeneratingFunction(maskedDB, hashFunction.digestLength, hashFunction)
+        val seed = xorBytes(maskedSeed,mgf2)
+        val mgf1 = maskGeneratingFunction(seed, maskedDB.size, hashFunction)
+        val rightInput = xorBytes(mgf1, maskedDB)
+
+        val lHash = rightInput.copyOfRange(0, hashFunction.digestLength)
+        val psOneByteAndM = rightInput.copyOfRange(hashFunction.digestLength,rightInput.size)
+        val oneByteIndex = getFirst1ByteIndex(psOneByteAndM)
+        val ps = psOneByteAndM.copyOfRange(0, oneByteIndex)
+        val oneByte = psOneByteAndM.copyOfRange(oneByteIndex, oneByteIndex+1)
+        val m = psOneByteAndM.copyOfRange(oneByteIndex+1, psOneByteAndM.size)
+
+        return m
+    }
+
+    private fun xorBytes(a1:ByteArray, a2:ByteArray):ByteArray {
+        if (a1.size != a2.size) {
+            throw IllegalArgumentException("bytearrays have to have the same length")
+        }
+        val result = ByteArray(a1.size)
+        for (i in result.indices) {
+            result[i] = a1[i] xor a2[i]
+        }
+        return result
+    }
+
+    private fun getFirst1ByteIndex(array: ByteArray):Int {
+        val oneByte:Byte = 1
+        for (i in array.indices) {
+            if (array[i] == oneByte) {
+                return i
+            }
+        }
+        throw IllegalArgumentException()
+    }
+
 }

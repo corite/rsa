@@ -3,7 +3,7 @@ import java.math.BigInteger
 class DifferenceOfSquares {
 
 
-    fun factorise(N:BigInteger):Pair<BigInteger, BigInteger> {
+    fun factorize(N:BigInteger):Pair<BigInteger, BigInteger> {
         var u = N.sqrt()
         while (!isSquare(u.pow(2)-N)) {
            u++
@@ -12,6 +12,10 @@ class DifferenceOfSquares {
         return Pair(u+w,u-w)
     }
     private fun isSquare(x:BigInteger):Boolean {
-        return x.sqrt().pow(2) == x
+        if (x< BigInteger.ZERO) {
+            return false
+        } else {
+            return x.sqrt().pow(2) == x
+        }
     }
 }
