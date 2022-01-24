@@ -28,7 +28,7 @@ class OptimalAsymmetricEncryptionPadding {
     }
 
     fun transform(n:BigInteger, m:ByteArray, hashFunction:MessageDigest):ByteArray {
-        if (m.size > n.toByteArray().size - 2*hashFunction.digestLength - 2) {
+        if (m.size > n.toByteArray().size - 2*hashFunction.digestLength -2) {
             throw IllegalArgumentException("message is too long")
         }
         val l = byteArrayOf()
@@ -38,7 +38,7 @@ class OptimalAsymmetricEncryptionPadding {
         val random = SecureRandom()
         val seed = random.generateSeed(hashFunction.digestLength)
 
-        val psLength = n.toByteArray().size - m.size + 2*hashFunction.digestLength + 2
+        val psLength = n.toByteArray().size - m.size - 2*hashFunction.digestLength - 2
         val ps = ByteArray(psLength)
 
         val mgf1 = maskGeneratingFunction(seed, lHash.size+ps.size+oneByte.size+m.size,hashFunction)
@@ -58,12 +58,15 @@ class OptimalAsymmetricEncryptionPadding {
 
         val mgf2 = maskGeneratingFunction(maskedDB, hashFunction.digestLength, hashFunction)
         val seed = xorBytes(maskedSeed,mgf2)
+        println(seed.joinToString(" ") { it.toUByte().toString(2) })
         val mgf1 = maskGeneratingFunction(seed, maskedDB.size, hashFunction)
         val rightInput = xorBytes(mgf1, maskedDB)
 
         val lHash = rightInput.copyOfRange(0, hashFunction.digestLength)
         val psOneByteAndM = rightInput.copyOfRange(hashFunction.digestLength,rightInput.size)
+        println(psOneByteAndM.joinToString(" ") { it.toUByte().toString(16) })
         val oneByteIndex = getFirst1ByteIndex(psOneByteAndM)
+        println(oneByteIndex)
         val ps = psOneByteAndM.copyOfRange(0, oneByteIndex)
         val oneByte = psOneByteAndM.copyOfRange(oneByteIndex, oneByteIndex+1)
         val m = psOneByteAndM.copyOfRange(oneByteIndex+1, psOneByteAndM.size)
