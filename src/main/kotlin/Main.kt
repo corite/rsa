@@ -3,12 +3,12 @@ import java.nio.charset.Charset
 import java.security.MessageDigest
 
 fun main() {
-//    showRsaPart1()
-//    showRsaPart2()
-//    showDiffOfSquares()
+    showRsaPart1()
+    showRsaPart2()
+    showDiffOfSquares()
     showOaep()
-
 }
+
 fun showRsaPart1() {
     println(":::AES PART I:::")
     //using BigInteger in order to be able to use (almost) arbitrary length numbers
@@ -24,8 +24,8 @@ fun showRsaPart2() {
     println("\n:::AES PART II:::")
     val rsa = RivestShamirAdleman()
     //using BigInteger in order to be able to use (almost) arbitrary length numbers
-    val p = rsa.getPrime(2000)
-    val q = rsa.getPrime(2000)
+    val p = rsa.getPrime(1024)
+    val q = rsa.getPrime(1024)
     val e = BigInteger("53")
     showEncAndDec(p,q,e)
 
@@ -48,27 +48,23 @@ fun showOaep() {
     println("\n:::OAEP:::")
 
     val oaep = OptimalAsymmetricEncryptionPadding()
-    val originalMessage = "Hello!"
+    val originalMessage = "Hello World!"
     println("original message= '$originalMessage'")
     val byteMessage = originalMessage.toByteArray(Charset.defaultCharset())
     val rsa = RivestShamirAdleman()
-    val p = rsa.getPrime(1000)
-    val q = rsa.getPrime(1000)
+    val p = rsa.getPrime(1024)
+    val q = rsa.getPrime(1024)
     val e = BigInteger.valueOf(53)
     val d = rsa.calculateD(p,q,e)
     val n = p*q
     val hashFunction = MessageDigest.getInstance("SHA-256")
     val transformed = oaep.transform(n,byteMessage, hashFunction)
-    //println(transformed.joinToString(" ") { it.toUByte().toString(16) })
-    //println("transformed message= '${transformed.toString(Charset.defaultCharset())}'")
+    println("transformed message= '${transformed.toString(Charset.defaultCharset())}'")
     val encrypted = rsa.encrypt(BigInteger(transformed), e, n)
     val decryptedBytes = rsa.decrypt(encrypted,d,n).toByteArray()
-    println("transformed: ${transformed.size*8}, n:${n.bitLength()}")
-    println("transformed: ${transformed.copyOfRange(0, 2).joinToString(" ") { it.toUByte().toString(2) }}, n:${n.toByteArray().copyOfRange(0, 2).joinToString(" ") { it.toUByte().toString(2) }}")
 
     val m = oaep.reverseTransform(byteArrayOf(0) +decryptedBytes, hashFunction)
     println("un-transformed message= '${m.toString(Charset.defaultCharset())}'")
-
 }
 
 fun showEncAndDec(p:BigInteger, q:BigInteger, e:BigInteger) {
@@ -78,7 +74,7 @@ fun showEncAndDec(p:BigInteger, q:BigInteger, e:BigInteger) {
     println("p= $p")
     println("q= $q")
     println("d= $d")
-    val x = BigInteger("42")
+    val x = BigInteger.valueOf(42)
     println("encrypting x= $x")
     val y = rsa.encrypt(x,e,n)
     println("encrypted: y= $y")

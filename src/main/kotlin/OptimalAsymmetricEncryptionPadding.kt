@@ -58,15 +58,12 @@ class OptimalAsymmetricEncryptionPadding {
 
         val mgf2 = maskGeneratingFunction(maskedDB, hashFunction.digestLength, hashFunction)
         val seed = xorBytes(maskedSeed,mgf2)
-        println(seed.joinToString(" ") { it.toUByte().toString(2) })
         val mgf1 = maskGeneratingFunction(seed, maskedDB.size, hashFunction)
         val rightInput = xorBytes(mgf1, maskedDB)
 
         val lHash = rightInput.copyOfRange(0, hashFunction.digestLength)
         val psOneByteAndM = rightInput.copyOfRange(hashFunction.digestLength,rightInput.size)
-        println(psOneByteAndM.joinToString(" ") { it.toUByte().toString(16) })
         val oneByteIndex = getFirst1ByteIndex(psOneByteAndM)
-        println(oneByteIndex)
         val ps = psOneByteAndM.copyOfRange(0, oneByteIndex)
         val oneByte = psOneByteAndM.copyOfRange(oneByteIndex, oneByteIndex+1)
         val m = psOneByteAndM.copyOfRange(oneByteIndex+1, psOneByteAndM.size)
