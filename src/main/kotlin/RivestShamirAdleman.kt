@@ -52,9 +52,15 @@ class RivestShamirAdleman {
         return squareMultiply(y,d,n)
     }
 
-    fun calculateD(p:BigInteger, q:BigInteger, e:BigInteger):BigInteger {
+    fun calculateED(p:BigInteger, q:BigInteger):Pair<BigInteger, BigInteger> {
         val phiOfN = (p - BigInteger.ONE) * (q - BigInteger.ONE)
-        return eeA(e,phiOfN)[1]+phiOfN
+        do {
+            val e = getRandomBigInteger(BigInteger.TWO, phiOfN- BigInteger.ONE)
+            val res = eeA(e,phiOfN)
+            if (res[0] == BigInteger.ONE) {
+                return Pair(e, res[1]+phiOfN % phiOfN)
+            }
+        } while (true)
     }
     fun getPrime(length:Int):BigInteger {
         var isPrime = false

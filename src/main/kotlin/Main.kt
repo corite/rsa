@@ -11,12 +11,11 @@ fun main() {
 
 fun showRsaPart1() {
     println(":::AES PART I:::")
-    //using BigInteger in order to be able to use (almost) arbitrary length numbers
+    val rsa = RivestShamirAdleman()
     val p = BigInteger("6791")
     val q = BigInteger("15679")
-    val e = BigInteger("53")
-
-    showEncAndDec(p,q,e)
+    val (e,d) = rsa.calculateED(p, q)
+    showEncAndDec(p,q,e,d)
 
 }
 
@@ -26,8 +25,8 @@ fun showRsaPart2() {
     //using BigInteger in order to be able to use (almost) arbitrary length numbers
     val p = rsa.getPrime(1024)
     val q = rsa.getPrime(1024)
-    val e = BigInteger("53")
-    showEncAndDec(p,q,e)
+    val (e,d) = rsa.calculateED(p,q)
+    showEncAndDec(p,q,e,d)
 
 }
 
@@ -54,8 +53,7 @@ fun showOaep() {
     val rsa = RivestShamirAdleman()
     val p = rsa.getPrime(1024)
     val q = rsa.getPrime(1024)
-    val e = BigInteger.valueOf(53)
-    val d = rsa.calculateD(p,q,e)
+    val (e,d) = rsa.calculateED(p,q)
     val n = p*q
     val hashFunction = MessageDigest.getInstance("SHA-256")
     val transformed = oaep.transform(n,byteMessage, hashFunction)
@@ -67,12 +65,12 @@ fun showOaep() {
     println("un-transformed message= '${m.toString(Charset.defaultCharset())}'")
 }
 
-fun showEncAndDec(p:BigInteger, q:BigInteger, e:BigInteger) {
+fun showEncAndDec(p:BigInteger, q:BigInteger, e:BigInteger, d:BigInteger) {
     val rsa = RivestShamirAdleman()
     val n = p*q
-    val d = rsa.calculateD( p, q, e)
     println("p= $p")
     println("q= $q")
+    println("e= $e")
     println("d= $d")
     val x = BigInteger.valueOf(42)
     println("encrypting x= $x")
