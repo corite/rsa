@@ -27,7 +27,7 @@ class RivestShamirAdleman {
 
         do {
             k++
-            val qk = r0 / (r1)
+            val qk = r0 / r1
             val rkTmp = r1
             r1 = r0 - qk*rkTmp
             val skTmp = s1
@@ -57,8 +57,8 @@ class RivestShamirAdleman {
         do {
             val e = getRandomBigInteger(BigInteger.TWO, phiOfN- BigInteger.ONE)
             val res = eeA(e,phiOfN)
-            if (res[0] == BigInteger.ONE) {
-                return Pair(e, res[1]+phiOfN % phiOfN)
+            if (res[0] == BigInteger.ONE) {// e has to be relatively prime to phi of n
+                return Pair(e, res[1].mod(phiOfN))
             }
         } while (true)
     }
@@ -86,12 +86,7 @@ class RivestShamirAdleman {
     }
 
     private fun testMillerRabin(n: BigInteger): Boolean {
-        var m:BigInteger
-        var k = 0
-        do {
-            k++
-            m = (n- BigInteger.ONE)/ BigInteger.TWO.pow(k)
-        } while (m % BigInteger.TWO == BigInteger.ZERO)
+        val (k,m) = getKM(n)
         val a = getRandomBigInteger(BigInteger.TWO, n - BigInteger.ONE)
 
         var b = squareMultiply(a, m, n)
@@ -106,6 +101,16 @@ class RivestShamirAdleman {
             }
         }
         return false
+    }
+
+    private fun getKM(n:BigInteger):Pair<Int, BigInteger> {
+        val n1 = n - BigInteger.ONE
+        var k = 0
+
+        while (n1.testBit(k)) {
+            k++
+        }
+        return Pair(k+1, n1.shiftRight(k+1))
     }
 
     private fun getRandomBigInteger(min:BigInteger, max:BigInteger):BigInteger {

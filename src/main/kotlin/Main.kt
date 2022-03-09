@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalUnsignedTypes::class)
+
 import java.math.BigInteger
 import java.nio.charset.Charset
 import java.security.MessageDigest
@@ -53,15 +55,11 @@ fun showOaep() {
     val rsa = RivestShamirAdleman()
     val p = rsa.getPrime(1024)
     val q = rsa.getPrime(1024)
-    val (e,d) = rsa.calculateED(p,q)
     val n = p*q
     val hashFunction = MessageDigest.getInstance("SHA-256")
     val transformed = oaep.transform(n,byteMessage, hashFunction)
-    println("transformed message= '${transformed.toString(Charset.defaultCharset())}'")
-    val encrypted = rsa.encrypt(BigInteger(transformed), e, n)
-    val decryptedBytes = rsa.decrypt(encrypted,d,n).toByteArray()
-
-    val m = oaep.reverseTransform(byteArrayOf(0) +decryptedBytes, hashFunction)
+    println("transformed message (hex)= '${transformed.asUByteArray().joinToString (""){ "0".repeat(2-it.toString(16).length) + it.toString(16) }}'")
+    val m = oaep.reverseTransform(transformed, hashFunction)
     println("un-transformed message= '${m.toString(Charset.defaultCharset())}'")
 }
 
